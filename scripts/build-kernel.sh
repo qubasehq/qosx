@@ -8,7 +8,15 @@ KERNEL_TAR="$ROOT/kernel/linux-$KERNEL_VERSION.tar.xz"
 KERNEL_URL="https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-$KERNEL_VERSION.tar.xz"
 OUTPUT="$ROOT/output"
 
-SOURCE_DATE_EPOCH="${SOURCE_DATE_EPOCH:-$(date +%s)}"
+# Ensure build directories exist
+mkdir -p "$ROOT/kernel" "$OUTPUT"
+
+# Ensure SOURCE_DATE_EPOCH is a valid integer (Unix timestamp)
+if ! [[ "${SOURCE_DATE_EPOCH:-}" =~ ^[0-9]+$ ]]; then
+  SOURCE_DATE_EPOCH="$(date +%s)"
+fi
+export SOURCE_DATE_EPOCH
+
 echo "[kernel] version=$KERNEL_VERSION epoch=$SOURCE_DATE_EPOCH"
 
 # Download if not present
