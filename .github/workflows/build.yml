@@ -142,6 +142,9 @@ jobs:
       - name: Build ISO
         run: sudo SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH bash scripts/build-iso.sh
 
+      - name: Fix output permissions
+        run: sudo chown -R $USER:$GROUPS output/
+
       - name: Generate checksums
         run: |
           sha256sum output/img/*.img > output/img/SHA256SUMS
