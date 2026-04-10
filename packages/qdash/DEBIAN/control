@@ -1,0 +1,10 @@
+Package: qdash
+Version: 1.0.0
+Architecture: amd64
+Maintainer: Qubase <dev@qubase.in>
+Depends: libc6
+Description: QOSX TUI dashboard
+ qdash is the QOSX system dashboard. Statically compiled with musl.
+ Launches on Wayland session start.
+Section: utils
+Priority: optional

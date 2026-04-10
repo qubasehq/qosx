@@ -1,0 +1,7 @@
+Origin: QOSX
+Label: QOSX
+Codename: qosx
+Architectures: amd64
+Components: main
+Description: QOSX custom package repository
+SignWith: 830B8C2ABBF35DA544C483F1CAD2EB4875B9FC72

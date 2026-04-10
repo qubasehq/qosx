@@ -1,0 +1,9 @@
+NAME="QOSX"
+VERSION="1.0"
+ID=qosx
+ID_LIKE=debian
+PRETTY_NAME="QOSX 1.0"
+HOME_URL="https://github.com/qubasehq/qosx"
+SUPPORT_URL="https://github.com/qubasehq/qosx/issues"
+BUG_REPORT_URL="https://github.com/qubasehq/qosx/issues"
+ANSI_COLOR="1;34"

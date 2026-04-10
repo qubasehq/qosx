@@ -1,0 +1,11 @@
+[Match]
+Name=en*
+
+[Network]
+DHCP=yes
+DNS=1.1.1.1
+DNS=8.8.8.8
+
+[DHCP]
+RouteMetric=100
+UseDNS=yes

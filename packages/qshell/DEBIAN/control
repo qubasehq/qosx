@@ -1,0 +1,10 @@
+Package: qshell
+Version: 1.0.0
+Architecture: amd64
+Maintainer: Qubase <dev@qubase.in>
+Depends: bash, libc6
+Description: QOSX custom shell
+ QShell is the default interactive shell for QOSX.
+ Built with Rust, statically linked.
+Section: shells
+Priority: optional

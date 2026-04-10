@@ -1,0 +1,185 @@
+name: QOSX Build Pipeline
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [ created ]
+
+env:
+  SOURCE_DATE_EPOCH: ${{ github.event.repository.pushed_at }}
+
+jobs:
+
+  # ── Stage 1: Kernel ──────────────────────────────────────────────
+  kernel:
+    name: Build kernel
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install kernel build deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y build-essential bc flex bison \
+            libssl-dev libelf-dev libncurses-dev dwarves wget
+
+      - name: Cache kernel source
+        uses: actions/cache@v4
+        with:
+          path: kernel/linux-6.6.30.tar.xz
+          key: kernel-6.6.30-tarball
+
+      - name: Build kernel
+        run: sudo bash scripts/build-kernel.sh
+
+      - name: Upload kernel artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kernel
+          path: |
+            output/vmlinuz-*
+            output/System.map-*
+            rootfs/modules/
+
+  # ── Stage 2: Rootfs ──────────────────────────────────────────────
+  rootfs:
+    name: Build rootfs
+    runs-on: ubuntu-22.04
+    needs: kernel
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download kernel artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: kernel
+          path: output/
+
+      - name: Install rootfs build deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y debootstrap rsync
+
+      - name: Build rootfs
+        run: sudo bash scripts/build-rootfs.sh
+
+      - name: Upload rootfs artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rootfs
+          path: rootfs/build/
+          retention-days: 1
+
+  # ── Stage 3: Packages ────────────────────────────────────────────
+  packages:
+    name: Build custom packages
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install packaging tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y dpkg-dev
+
+      - name: Build .deb packages
+        run: bash scripts/build-packages.sh
+
+      - name: Upload package artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: packages
+          path: output/*.deb
+
+  # ── Stage 4: Image ───────────────────────────────────────────────
+  image:
+    name: Assemble disk image
+    runs-on: ubuntu-22.04
+    needs: [ rootfs, packages ]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download rootfs
+        uses: actions/download-artifact@v4
+        with:
+          name: rootfs
+          path: rootfs/build/
+
+      - name: Download packages
+        uses: actions/download-artifact@v4
+        with:
+          name: packages
+          path: output/
+
+      - name: Install image tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y qemu-utils parted grub-pc-bin \
+            grub-efi-amd64-bin dosfstools e2fsprogs rsync
+
+      - name: Build image
+        run: sudo bash scripts/build-image.sh
+
+      - name: Build ISO
+        run: sudo bash scripts/build-iso.sh
+
+      - name: Generate checksums
+        run: |
+          sha256sum output/img/*.img > output/img/SHA256SUMS
+          sha256sum output/iso/*.iso > output/iso/SHA256SUMS
+
+      - name: Upload image artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: qosx-image
+          path: |
+            output/img/
+            output/iso/
+
+  # ── Stage 5: Boot test ───────────────────────────────────────────
+  test:
+    name: Boot test
+    runs-on: ubuntu-22.04
+    needs: image
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download image
+        uses: actions/download-artifact@v4
+        with:
+          name: qosx-image
+          path: output/
+
+      - name: Install QEMU
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y qemu-system-x86
+
+      - name: Run boot test
+        run: bash scripts/test-boot.sh
+        timeout-minutes: 5
+
+  # ── Stage 6: Release ─────────────────────────────────────────────
+  release:
+    name: Publish release
+    runs-on: ubuntu-22.04
+    needs: test
+    if: github.event_name == 'release'
+    steps:
+      - name: Download image
+        uses: actions/download-artifact@v4
+        with:
+          name: qosx-image
+          path: output/
+
+      - name: Upload to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            output/img/*.img
+            output/iso/*.iso
+            output/img/SHA256SUMS
+            output/iso/SHA256SUMS

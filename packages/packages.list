@@ -1,0 +1,93 @@
+# QOSX Package List
+# Format: one package per line. Comments allowed.
+# This file is the single source of truth for what enters the image.
+# To add a package: add it here, commit, push. Pipeline installs it.
+
+# --- Base system ---
+systemd
+systemd-sysv
+dbus
+udev
+sudo
+login
+passwd
+util-linux
+procps
+coreutils
+findutils
+grep
+sed
+gawk
+less
+curl
+wget
+ca-certificates
+openssh-client
+rsync
+tar
+gzip
+bzip2
+xz-utils
+
+# --- Networking ---
+iproute2
+iputils-ping
+net-tools
+dhcpcd5
+iwd
+nftables
+dnsutils
+
+# --- Filesystem tools ---
+e2fsprogs
+dosfstools
+parted
+
+# --- Terminal + shell ---
+bash
+bash-completion
+vim
+nano
+man-db
+htop
+tmux
+tree
+
+# --- Graphics stack (Wayland) ---
+libdrm2
+libgl1-mesa-dri
+libgles2-mesa
+mesa-vulkan-drivers
+libwayland-client0
+libwayland-server0
+libinput10
+libxkbcommon0
+fonts-noto-core
+fonts-noto-mono
+
+# --- Compositor + WM ---
+sway
+swaybg
+swayidle
+swaylock
+weston
+foot
+grim
+slurp
+wl-clipboard
+mako-notifier
+waybar
+
+# --- Seatd (rootless Wayland) ---
+seatd
+
+# --- Audio ---
+pipewire
+pipewire-pulse
+wireplumber
+
+# --- Dev tools (in image for now, strip later) ---
+git
+make
+gcc
+python3

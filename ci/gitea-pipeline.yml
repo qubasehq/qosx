@@ -1,0 +1,45 @@
+name: QOSX Build Pipeline (Gitea)
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y debootstrap qemu-utils qemu-system-x86 \
+            parted grub-pc-bin grub-efi-amd64-bin dosfstools e2fsprogs \
+            build-essential bc flex bison libssl-dev libelf-dev xorriso \
+            rsync dpkg-dev wget
+
+      - name: Build kernel
+        run: sudo bash scripts/build-kernel.sh
+
+      - name: Build rootfs
+        run: sudo bash scripts/build-rootfs.sh
+
+      - name: Build packages
+        run: bash scripts/build-packages.sh
+
+      - name: Build image
+        run: sudo bash scripts/build-image.sh
+
+      - name: Build ISO
+        run: sudo bash scripts/build-iso.sh
+
+      - name: Boot test
+        run: bash scripts/test-boot.sh
+        timeout-minutes: 5
+
+      - name: Archive artifacts
+        run: |
+          mkdir -p artifacts
+          cp output/img/*.img artifacts/ 2>/dev/null || true
+          cp output/iso/*.iso artifacts/ 2>/dev/null || true
+          sha256sum artifacts/* > artifacts/SHA256SUMS

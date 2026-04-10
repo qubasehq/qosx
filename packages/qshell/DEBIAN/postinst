@@ -1,0 +1,17 @@
+#!/bin/bash
+set -e
+
+case "$1" in
+  configure)
+    # Register qsh as a valid shell
+    if ! grep -q '/usr/local/bin/qsh' /etc/shells; then
+      echo '/usr/local/bin/qsh' >> /etc/shells
+    fi
+    # Register as alternative
+    update-alternatives --install /usr/bin/qsh qsh /usr/local/bin/qsh 50 || true
+    ;;
+  abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+esac
+
+exit 0
