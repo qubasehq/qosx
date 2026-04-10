@@ -42,24 +42,33 @@ graphics:
 	@scripts/install-graphics.sh
 
 ## Assemble disk image
-image:
-	@echo "[image] Assembling $(IMG)..."
-	@scripts/build-image.sh $(IMG)
+$(IMG):
+	@echo "[image] Assembling $@..."
+	@sudo scripts/build-image.sh $@
+
+image: $(IMG)
 
 ## Wrap into bootable ISO
-iso: image
-	@echo "[iso] Creating $(ISO)..."
-	@scripts/build-iso.sh $(IMG) $(ISO)
+$(ISO): $(IMG)
+	@echo "[iso] Creating $@..."
+	@sudo scripts/build-iso.sh $(IMG) $@
+
+iso: $(ISO)
 
 ## Boot test in QEMU headless — exits 0 if TTY prompt found
-test:
+test: $(IMG)
 	@echo "[test] Running boot test..."
 	@scripts/test-boot.sh $(IMG)
 
 ## Boot with GUI (interactive)
-run:
-	@echo "[run] Launching QEMU with GUI..."
+run: $(IMG)
+	@echo "[run] Launching QEMU with disk image..."
 	@scripts/run-qemu.sh $(IMG)
+
+## Boot ISO with GUI (interactive)
+run-iso: $(ISO)
+	@echo "[run] Launching QEMU with ISO CD-ROM..."
+	@scripts/run-qemu.sh $(ISO)
 
 ## Clean build artifacts (not source)
 clean:

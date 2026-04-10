@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 IMG="${1:-$(ls $ROOT/output/img/*.img 2>/dev/null | tail -1)}"
+[ -n "${1:-}" ] && shift
 
 if [ -z "$IMG" ]; then
   echo "ERROR: No image found. Run: make image"
@@ -10,6 +11,13 @@ if [ -z "$IMG" ]; then
 fi
 
 echo "[run] Launching: $IMG"
+
+# Choose boot mode based on file extension
+BOOT_MODE="-drive file=$IMG,format=raw,if=virtio,file.locking=off"
+if [[ "$IMG" == *.iso ]]; then
+  echo "[run] ISO mode detected"
+  BOOT_MODE="-drive file=$IMG,format=raw,media=cdrom"
+fi
 
 # Detect KVM
 ACCEL="tcg"
@@ -27,7 +35,7 @@ qemu-system-x86_64 \
   $CPU_FLAG \
   -m 4096 \
   -smp 4 \
-  -drive file="$IMG",format=raw,if=virtio,file.locking=off \
+  $BOOT_MODE \
   -vga virtio \
   -display gtk,gl=on \
   -netdev user,id=net0,hostfwd=tcp::2222-:22 \
