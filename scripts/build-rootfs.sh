@@ -133,7 +133,7 @@ chroot "$BUILD" /bin/bash -c "
   getent group input  >/dev/null 2>&1 || groupadd -r input
   getent group video  >/dev/null 2>&1 || groupadd -r video
   getent group audio  >/dev/null 2>&1 || groupadd -r audio
-  id babu >/dev/null 2>&1 || useradd -m -s /bin/bash -G sudo,audio,video,render,input,_seatd babu
+  id babu >/dev/null 2>&1 || useradd -m -s /usr/local/bin/qsh -G sudo,audio,video,render,input,_seatd babu
 "
 
 # Set passwords using chpasswd (safer than raw sed on shadow)
