@@ -12,6 +12,9 @@ if [ "$(id -u)" -ne 0 ]; then
   exit 1
 fi
 
+# Ensure output directory exists
+mkdir -p "$(dirname "$ISO")"
+
 echo "[iso] Building $ISO from $IMG..."
 
 # Cleanup on exit
