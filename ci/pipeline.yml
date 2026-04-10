@@ -33,7 +33,7 @@ jobs:
           key: kernel-6.6.30-tarball
 
       - name: Build kernel
-        run: sudo bash scripts/build-kernel.sh
+        run: sudo SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH bash scripts/build-kernel.sh
 
       - name: Upload kernel artifact
         uses: actions/upload-artifact@v4
@@ -65,7 +65,7 @@ jobs:
           sudo apt-get install -y debootstrap rsync
 
       - name: Build rootfs
-        run: sudo bash scripts/build-rootfs.sh
+        run: sudo SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH bash scripts/build-rootfs.sh
 
       - name: Upload rootfs artifact
         uses: actions/upload-artifact@v4
@@ -129,10 +129,10 @@ jobs:
             xorriso mtools squashfs-tools
 
       - name: Build image
-        run: sudo bash scripts/build-image.sh
+        run: sudo SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH bash scripts/build-image.sh
 
       - name: Build ISO
-        run: sudo bash scripts/build-iso.sh
+        run: sudo SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH bash scripts/build-iso.sh
 
       - name: Generate checksums
         run: |
