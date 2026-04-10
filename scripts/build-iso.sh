@@ -30,15 +30,15 @@ LOOP=$(losetup --find --partscan --show "$IMG")
 mkdir -p /mnt/qosx-iso
 mount "${LOOP}p3" /mnt/qosx-iso
 
+echo "[iso] Preparing Live overrides..."
+mkdir -p "$ISOWORK/rootfs_overrides/etc"
+# Provide an empty fstab for the Live system to prevent mount conflicts
+echo "# Live ISO fstab" > "$ISOWORK/rootfs_overrides/etc/fstab"
+
 echo "[iso] Creating squashfs filesystem..."
-# Only exclude the contents of system dirs, but keep the mount points themselves
-mksquashfs /mnt/qosx-iso "$ISOWORK/live/filesystem.squashfs" \
+# Merge rootfs and overrides. No exclusions to ensure /dev, /proc, /sbin exist.
+mksquashfs /mnt/qosx-iso "$ISOWORK/rootfs_overrides" "$ISOWORK/live/filesystem.squashfs" \
   -comp xz \
-  -e boot/* \
-  -e proc/* \
-  -e sys/* \
-  -e dev/* \
-  -e run/* \
   -noappend
 
 # Copy kernel — use versioned filename that actually exists
