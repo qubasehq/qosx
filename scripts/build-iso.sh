@@ -33,6 +33,12 @@ cp /mnt/qosx-iso/boot/vmlinuz     "$ISOWORK/boot/vmlinuz"
 cp /mnt/qosx-iso/boot/initrd.img* "$ISOWORK/boot/initrd.img" 2>/dev/null || \
   cp "$ROOT/output/initrd.img"    "$ISOWORK/boot/initrd.img" 2>/dev/null || true
 
+# Copy GRUB modules from the mounted image
+mkdir -p "$ISOWORK/boot/grub/i386-pc"
+mkdir -p "$ISOWORK/boot/grub/x86_64-efi"
+cp -a /mnt/qosx-iso/boot/grub/i386-pc/. "$ISOWORK/boot/grub/i386-pc/" 2>/dev/null || true
+cp -a /mnt/qosx-iso/boot/grub/x86_64-efi/. "$ISOWORK/boot/grub/x86_64-efi/" 2>/dev/null || true
+
 umount /mnt/qosx-iso
 losetup -d "$LOOP"
 
@@ -51,6 +57,31 @@ menuentry "QOSX (recovery)" {
   initrd /boot/initrd.img
 }
 EOF
+
+# Generate EFI boot image
+mkdir -p "$ISOWORK/EFI/boot"
+grub-mkimage \
+  --format=x86_64-efi \
+  --output="$ISOWORK/EFI/boot/bootx64.efi" \
+  --prefix=/boot/grub \
+  part_gpt part_msdos fat iso9660 normal boot linux echo configfile \
+  search search_label search_fs_uuid ls all_video gfxterm gfxterm_background \
+  gfxmenu png jpeg ext2 squash4
+
+# Generate eltorito BIOS boot image
+grub-mkimage \
+  --format=i386-pc-eltorito \
+  --output="$ISOWORK/boot/grub/i386-pc/eltorito.img" \
+  --prefix=/boot/grub \
+  part_gpt part_msdos biosdisk iso9660 normal boot linux echo configfile \
+  search ls ext2 squash4
+
+# Create EFI partition image for xorriso
+dd if=/dev/zero of="$ISOWORK/boot/grub/efi.img" bs=1M count=4
+mkfs.fat "$ISOWORK/boot/grub/efi.img"
+mmd -i "$ISOWORK/boot/grub/efi.img" ::/EFI ::/EFI/boot
+mcopy -i "$ISOWORK/boot/grub/efi.img" \
+  "$ISOWORK/EFI/boot/bootx64.efi" ::/EFI/boot/
 
 # Build ISO (EFI + BIOS hybrid)
 echo "[iso] Running xorriso..."

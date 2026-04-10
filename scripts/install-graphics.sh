@@ -16,6 +16,9 @@ fi
 
 echo "[graphics] Installing graphics stack into rootfs..."
 
+# Mount DNS resolution into chroot
+mount --bind /etc/resolv.conf "$BUILD/etc/resolv.conf"
+
 chroot "$BUILD" /bin/bash -c "
   export DEBIAN_FRONTEND=noninteractive
   apt-get update -qq
@@ -23,7 +26,7 @@ chroot "$BUILD" /bin/bash -c "
     libdrm2 libdrm-common \
     libgl1-mesa-dri libgles2-mesa mesa-vulkan-drivers \
     libwayland-client0 libwayland-server0 libwayland-egl1 \
-    libinput10 libxkbcommon0 libxkbcommon-x11-0 \
+    libinput10 libxkbcommon0 \
     xkb-data \
     sway swaybg swayidle swaylock \
     foot \
@@ -31,10 +34,13 @@ chroot "$BUILD" /bin/bash -c "
     mako-notifier waybar \
     seatd \
     pipewire pipewire-pulse wireplumber \
-    fonts-noto-core fonts-noto-mono fonts-noto-color-emoji
+    fonts-noto-core fonts-noto-mono
   apt-get clean
   rm -rf /var/lib/apt/lists/*
   systemctl enable seatd
 "
+
+# Unmount DNS resolution
+umount "$BUILD/etc/resolv.conf" 2>/dev/null || true
 
 echo "[graphics] Done."

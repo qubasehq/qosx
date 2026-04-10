@@ -63,8 +63,9 @@ chroot "$BUILD" /bin/bash -c "
 # Create user babu
 chroot "$BUILD" /bin/bash -c "
   useradd -m -s /usr/local/bin/qsh -G sudo,audio,video,input,_seatd babu 2>/dev/null || true
-  echo 'babu:qosx' | chpasswd
-  echo 'root:qosx' | chpasswd
+  HASH=\$(openssl passwd -6 qosx)
+  sed -i \"s|^babu:[^:]*|babu:\$HASH|\" /etc/shadow
+  sed -i \"s|^root:[^:]*|root:\$HASH|\" /etc/shadow
 "
 
 # Set hostname
