@@ -31,9 +31,14 @@ mkdir -p /mnt/qosx-iso
 mount "${LOOP}p3" /mnt/qosx-iso
 
 echo "[iso] Creating squashfs filesystem..."
+# Only exclude the contents of system dirs, but keep the mount points themselves
 mksquashfs /mnt/qosx-iso "$ISOWORK/live/filesystem.squashfs" \
   -comp xz \
-  -e proc -e sys -e dev -e run \
+  -e boot/* \
+  -e proc/* \
+  -e sys/* \
+  -e dev/* \
+  -e run/* \
   -noappend
 
 # Copy kernel — use versioned filename that actually exists

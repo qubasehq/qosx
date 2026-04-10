@@ -64,11 +64,11 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y debootstrap rsync
 
-      - name: Build rootfs
-        run: sudo SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH bash scripts/build-rootfs.sh
-
-      - name: Pack rootfs
-        run: sudo tar -C rootfs/build -czf rootfs.tar.gz .
+      - name: Build and Pack rootfs
+        run: |
+          sudo SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH bash scripts/build-rootfs.sh
+          sudo tar -C rootfs/build -czf rootfs.tar.gz .
+          sudo rm -rf rootfs/build
 
       - name: Upload rootfs artifact
         uses: actions/upload-artifact@v4
