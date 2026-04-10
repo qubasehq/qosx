@@ -1,0 +1,11 @@
+[org/gnome/desktop/background]
+picture-uri='file:///usr/share/qosx/wallpaper.png'
+picture-options='zoom'
+
+[org/gnome/desktop/interface]
+gtk-theme='Arc-Dark'
+icon-theme='Papirus'
+
+[org/gnome/shell/extensions/dash-to-dock]
+dock-position='BOTTOM'
+dash-max-icon-size=48

@@ -3,7 +3,7 @@
 [ -z "$PS1" ] && return
 
 # Prompt
-PS1='\[\e[1;34m\][\u@qosx \W]\$\[\e[0m\] '
+PS1='\[\e[1;32m\]\u@\h\[\e[0m\]:\[\e[1;36m\]\w\[\e[0m\]\$ '
 
 # History
 HISTSIZE=5000

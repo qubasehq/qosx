@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Resolution Fix
+Exec=sh -c "xrandr --newmode '1280x800' 83.50 1280 1352 1480 1680 800 803 809 831 -hsync +vsync && xrandr --addmode Virtual-1 1280x800 && xrandr --output Virtual-1 --mode 1280x800"
+X-GNOME-Autostart-enabled=true
+NoDisplay=true

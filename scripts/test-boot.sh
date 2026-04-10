@@ -23,13 +23,31 @@ LOG="/tmp/qosx-boot-test.log"
 echo "[test] Boot testing: $IMG"
 echo "[test] Waiting for: '$SUCCESS_STRING' (timeout: ${TIMEOUT}s)"
 
+# Detect KVM — don't hardcode, CI runners may not have it
+ACCEL="tcg"
+CPU_FLAG="-cpu max"
+if [ -r /dev/kvm ]; then
+  ACCEL="kvm"
+  CPU_FLAG="-cpu host"
+  echo "[test] KVM enabled"
+else
+  echo "[test] KVM not available, using TCG (slower)"
+fi
+
+# Clean stale log
+rm -f "$LOG"
+
+OVERLAY="/tmp/qosx-test.qcow2"
+rm -f "$OVERLAY"
+qemu-img create -f qcow2 -b "$(realpath "$IMG")" -F raw "$OVERLAY" >/dev/null
+
 # Launch QEMU headless with serial output to log
 timeout "$TIMEOUT" qemu-system-x86_64 \
-  -machine q35,accel=kvm \
-  -cpu host \
+  -machine q35,accel=$ACCEL \
+  $CPU_FLAG \
   -m 2048 \
   -smp 2 \
-  -drive file="$IMG",format=raw,if=virtio \
+  -drive file="$OVERLAY",format=qcow2,if=virtio \
   -netdev user,id=net0 \
   -device virtio-net-pci,netdev=net0 \
   -nographic \

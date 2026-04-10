@@ -95,11 +95,11 @@ bindsym XF86AudioLowerVolume exec wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
 bindsym XF86AudioMute        exec wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
 
 ### Autostart
-exec_always --no-startup-id mako
-exec_always --no-startup-id waybar
-exec --no-startup-id /usr/local/bin/qdash
-exec --no-startup-id pipewire
-exec --no-startup-id wireplumber
+# NOTE: --no-startup-id is an i3 flag, invalid in Sway — removed
+exec_always mako
+exec /usr/local/bin/qdash
+exec pipewire
+exec wireplumber
 
 ### Appearance
 gaps inner 6
@@ -109,7 +109,7 @@ client.focused          #5294E2 #5294E2 #ffffff #5294E2 #5294E2
 client.unfocused        #2d2d2d #2d2d2d #888888 #2d2d2d #2d2d2d
 client.focused_inactive #2d2d2d #2d2d2d #ffffff #2d2d2d #2d2d2d
 
-### Status bar
+### Status bar (waybar launched here — not via exec_always to avoid double instance)
 bar {
     swaybar_command waybar
 }

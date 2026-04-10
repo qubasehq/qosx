@@ -1,0 +1,5 @@
+# /etc/fstab — QOSX filesystem table
+# <file system>  <mount point>  <type>  <options>            <dump>  <pass>
+/dev/vda3        /              ext4    errors=remount-ro    0       1
+/dev/vda2        /boot/efi      vfat    umask=0077           0       2
+tmpfs            /tmp           tmpfs   defaults,nosuid,nodev 0      0

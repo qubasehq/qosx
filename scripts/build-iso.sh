@@ -14,6 +14,14 @@ fi
 
 echo "[iso] Building $ISO from $IMG..."
 
+# Cleanup on exit
+LOOP=""
+cleanup_iso() {
+  umount /mnt/qosx-iso 2>/dev/null || true
+  [ -n "$LOOP" ] && losetup -d "$LOOP" 2>/dev/null || true
+}
+trap cleanup_iso EXIT
+
 rm -rf "$ISOWORK"
 mkdir -p "$ISOWORK"/{boot/grub,live,EFI/boot}
 
@@ -28,10 +36,15 @@ mksquashfs /mnt/qosx-iso "$ISOWORK/live/filesystem.squashfs" \
   -e proc -e sys -e dev -e run \
   -noappend
 
-# Copy kernel + initrd
-cp /mnt/qosx-iso/boot/vmlinuz     "$ISOWORK/boot/vmlinuz"
-cp /mnt/qosx-iso/boot/initrd.img* "$ISOWORK/boot/initrd.img" 2>/dev/null || \
-  cp "$ROOT/output/initrd.img"    "$ISOWORK/boot/initrd.img" 2>/dev/null || true
+# Copy kernel — use versioned filename that actually exists
+cp /mnt/qosx-iso/boot/vmlinuz-$KERNEL_VERSION "$ISOWORK/boot/vmlinuz"
+
+# Copy or generate initrd
+if [ -f /mnt/qosx-iso/boot/initrd.img-$KERNEL_VERSION ]; then
+  cp /mnt/qosx-iso/boot/initrd.img-$KERNEL_VERSION "$ISOWORK/boot/initrd.img"
+else
+  echo "[iso] WARNING: No initrd found, ISO may not boot"
+fi
 
 # Copy GRUB modules from the mounted image
 mkdir -p "$ISOWORK/boot/grub/i386-pc"
@@ -41,19 +54,20 @@ cp -a /mnt/qosx-iso/boot/grub/x86_64-efi/. "$ISOWORK/boot/grub/x86_64-efi/" 2>/d
 
 umount /mnt/qosx-iso
 losetup -d "$LOOP"
+LOOP=""
 
 # GRUB config for ISO
 cat > "$ISOWORK/boot/grub/grub.cfg" << 'EOF'
 set timeout=5
 set default=0
 
-menuentry "QOSX" {
-  linux  /boot/vmlinuz boot=live quiet splash
+menuentry "QOSX Live" {
+  linux  /boot/vmlinuz boot=live components quiet splash
   initrd /boot/initrd.img
 }
 
-menuentry "QOSX (recovery)" {
-  linux  /boot/vmlinuz boot=live single
+menuentry "QOSX Live (recovery)" {
+  linux  /boot/vmlinuz boot=live components single
   initrd /boot/initrd.img
 }
 EOF
@@ -101,5 +115,11 @@ xorriso -as mkisofs \
   "$ISOWORK"
 
 rm -rf "$ISOWORK"
+
+# Set ownership back to the invoking user if run via sudo
+if [ -n "${SUDO_UID:-}" ] && [ -n "${SUDO_GID:-}" ]; then
+  chown "$SUDO_UID:$SUDO_GID" "$ISO"
+fi
+
 echo "[iso] Done: $ISO"
 echo "[iso] SHA256: $(sha256sum "$ISO")"

@@ -28,12 +28,17 @@ tar
 gzip
 bzip2
 xz-utils
+live-boot
+squashfs-tools
+initramfs-tools
+locales
 
 # --- Networking ---
 iproute2
 iputils-ping
 net-tools
-dhcpcd5
+systemd-resolved
+# dhcpcd5 — REMOVED: conflicts with systemd-networkd DHCP
 iwd
 nftables
 dnsutils
@@ -53,30 +58,33 @@ htop
 tmux
 tree
 
-# --- Graphics stack (Wayland) ---
+# --- Firmware ---
+firmware-linux-free
+firmware-linux-nonfree
+
+# --- Graphics stack (X11/Wayland + GNOME) ---
+xserver-xorg
+xserver-xorg-video-all
+xserver-xorg-input-all
 libdrm2
 libgl1-mesa-dri
-libgles2-mesa
+libgles2
 mesa-vulkan-drivers
-libwayland-client0
-libwayland-server0
-libinput10
-libxkbcommon0
+xkb-data
 fonts-noto-core
 fonts-noto-mono
 
-# --- Compositor + WM ---
-sway
-swaybg
-swayidle
-swaylock
-weston
-foot
-grim
-slurp
-wl-clipboard
-mako-notifier
-waybar
+# --- Desktop Environment (GNOME) ---
+gnome-core
+gdm3
+gnome-shell-extension-dashtodock
+gnome-tweaks
+gnome-control-center
+gnome-terminal
+nautilus
+adwaita-icon-theme-full
+arc-theme
+papirus-icon-theme
 
 # --- Seatd (rootless Wayland) ---
 seatd
