@@ -2,7 +2,20 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-IMG="${1:-$ROOT/output/img/qosx.img}"
+VERSION="${1:-$(git describe --tags --always --dirty 2>/dev/null || echo "dev")}"
+
+# Find the most recent image if exact version doesn't exist
+if [ ! -f "$ROOT/output/img/qosx-$VERSION.img" ]; then
+  IMG=$(ls -t $ROOT/output/img/qosx-*.img 2>/dev/null | head -1)
+  if [ -z "$IMG" ]; then
+    echo "[test] ERROR: No image found in output/img/"
+    exit 1
+  fi
+  echo "[test] Using most recent image: $(basename "$IMG")"
+else
+  IMG="$ROOT/output/img/qosx-$VERSION.img"
+fi
+
 TIMEOUT=120
 SUCCESS_STRING="qosx login:"
 LOG="/tmp/qosx-boot-test.log"
